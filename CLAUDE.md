@@ -19,22 +19,24 @@ No test suite exists in this project.
 
 ## Configuration
 
-Before running, set real values in [src/main/resources/application.properties](src/main/resources/application.properties):
+Set environment variables before running:
 
-```
-telegram.bot.token=<bot token from @BotFather>
-telegram.chat.id=<target chat or group ID>
+```bash
+export TELEGRAM_BOT_TOKEN=<bot token from @BotFather>
+export TELEGRAM_CHAT_ID=<target chat or group ID>
+export DISCORD_WEBHOOK_URL=<webhook url>  # optional
+export TIMEZONE=Asia/Ho_Chi_Minh         # optional, default UTC
 ```
 
 ## Architecture
 
-This is a Spring Boot 3.2.5 / Java 21 scheduled bot with no web endpoints exposed. The entire runtime loop is:
+This is a Spring Boot 3.2.5 / Java 21 scheduled bot. The entire runtime loop is:
 
-1. **`PriceScheduler`** fires every hour (`fixedRate = 3_600_000 ms`) via `@Scheduled`.
-2. It calls **`SilverPriceService.fetchSilverPrice()`**, which hits the goldprice.org internal API (`https://data-asg.goldprice.org/GetData/USD/1`) with spoofed `User-Agent`/`Referer` headers and parses the JSON array response — index 1 is the XAG (silver) USD price, index 2 is change%. A legacy colon-delimited fallback is also handled.
-3. The resulting **`SilverPrice`** model formats a Vietnamese-language Markdown message via `toTelegramMessage()`.
-4. **`TelegramService.sendMessage()`** POSTs that message to the Telegram Bot API (`/sendMessage`) using `parse_mode=Markdown`.
+1. **`PriceScheduler`** fires at the top of every hour (`cron = "0 0 * * * *"`, timezone from `TIMEZONE` env var) via `@Scheduled`.
+2. It calls **`SilverPriceService.fetchSilverPrice()`**, which hits `https://data-asg.goldprice.org/dbXRates/USD` with spoofed `User-Agent`/`Referer` headers and parses `items[0].xagPrice` (price) and `items[0].pcXag` (change%).
+3. The resulting **`SilverPrice`** model formats a Markdown message via `toMessage()`.
+4. **`NotificationRouter`** fans out to all enabled channels: **`TelegramService`** and/or **`DiscordService`**, each enabled via `@ConditionalOnProperty`. Both support splitting messages that exceed the per-platform character limit (Telegram 4096, Discord 2000) using `MessageUtil.split()`.
 
-On any exception, the scheduler catches it and sends an error message to the same Telegram chat instead of crashing.
+On any exception, the scheduler catches it and sends an error message to all channels instead of crashing.
 
-There is no database, no REST controller, and no external state — each scheduled tick is fully stateless.
+There is no database and no external state — each scheduled tick is fully stateless. A REST endpoint `POST /api/price/trigger` exists for manual triggering.

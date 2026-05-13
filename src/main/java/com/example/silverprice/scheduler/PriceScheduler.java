@@ -16,7 +16,7 @@ public class PriceScheduler {
     private final SilverPriceService silverPriceService;
     private final NotificationRouter notificationRouter;
 
-    @Scheduled(fixedRate = 3_600_000)
+    @Scheduled(cron = "0 0 * * * *", zone = "${scheduler.timezone}")
     public void reportSilverPrice() {
         log.info("Fetching silver price...");
         try {

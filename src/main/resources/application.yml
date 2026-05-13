@@ -14,6 +14,9 @@ notification:
     enabled: false
     webhook-url: ${DISCORD_WEBHOOK_URL:}
 
+scheduler:
+  timezone: ${TIMEZONE:UTC}
+
 logging:
   level:
     com.example.silverprice: INFO

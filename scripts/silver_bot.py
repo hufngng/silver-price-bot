@@ -3,10 +3,16 @@ import threading
 import requests
 import schedule
 import time
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from flask import Flask, jsonify
 
 API_URL = "https://data-asg.goldprice.org/dbXRates/USD"
+_tz_name = os.getenv("TIMEZONE", "")
+try:
+    TZ = ZoneInfo(_tz_name) if _tz_name else timezone.utc
+except ZoneInfoNotFoundError:
+    TZ = timezone.utc
 
 
 def _telegram_url() -> str:
@@ -35,7 +41,7 @@ def send_telegram(text: str):
 
 def build_message(price_usd: float, change_percent: float) -> str:
     sign = "+" if change_percent >= 0 else ""
-    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    now = datetime.now(TZ).strftime("%d/%m/%Y %H:%M:%S")
     return (
         f"🥈 *Silver Price - USD/oz*\n"
         f"💰 Price: `${price_usd:.2f}`\n"
@@ -46,7 +52,7 @@ def build_message(price_usd: float, change_percent: float) -> str:
 
 
 def job():
-    print(f"[{datetime.now()}] Fetching silver price...")
+    print(f"[{datetime.now(TZ).strftime('%Y-%m-%d %H:%M:%S')}] Fetching silver price...")
     try:
         data = fetch_silver_price()
         msg = build_message(data["price_usd"], data["change_percent"])
@@ -73,7 +79,7 @@ def trigger():
 
 
 def run_scheduler():
-    schedule.every().hour.do(job)
+    schedule.every().hour.at(":00").do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)

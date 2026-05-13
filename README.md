@@ -8,6 +8,7 @@ Sends silver spot price (XAG/USD) to Telegram and/or Discord every hour, sourced
 export TELEGRAM_BOT_TOKEN="your_bot_token"
 export TELEGRAM_CHAT_ID="your_chat_id"
 export DISCORD_WEBHOOK_URL="your_discord_webhook_url"  # optional
+export TIMEZONE="Asia/Ho_Chi_Minh"                     # optional, default UTC
 ```
 
 > For zsh: add the lines above to `~/.zshrc` then run `source ~/.zshrc`.
@@ -41,6 +42,7 @@ docker build -t silver-bot-java .
 docker run -d \
   -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
   -e TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID \
+  -e TIMEZONE=$TIMEZONE \
   -p 8081:8081 \
   --name silver-bot-java \
   --restart unless-stopped \
@@ -73,6 +75,7 @@ docker build -t silver-bot-python .
 docker run -d \
   -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
   -e TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID \
+  -e TIMEZONE=$TIMEZONE \
   -p 8080:8080 \
   --name silver-bot-python \
   --restart unless-stopped \
