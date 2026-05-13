@@ -1,6 +1,6 @@
 # Silver Price Bot
 
-Sends silver spot price (XAG/USD) to Telegram and/or Discord every hour, sourced from goldprice.org.
+Sends silver price to Telegram every hour. Supports 3 implementations and multiple data sources.
 
 ## Project Structure
 
@@ -15,12 +15,20 @@ See implementation-specific READMEs:
 - [python/README.md](python/README.md)
 - [go/README.md](go/README.md)
 
+## Data Sources
+
+| Source | Data |
+|---|---|
+| goldprice.org | XAG/USD spot price |
+| muavangbac.vn | Phu Quy silver piece & bar (VND) |
+| giabac.vn | Silver 999 per chi/luong/kg (VND) |
+
 ## Environment Variables
 
 ```bash
 export TELEGRAM_BOT_TOKEN="your_bot_token"
 export TELEGRAM_CHAT_ID="your_chat_id"
-export DISCORD_WEBHOOK_URL="your_discord_webhook_url"  # optional
+export DISCORD_WEBHOOK_URL="your_discord_webhook_url"  # optional, Java only
 export TIMEZONE="Asia/Ho_Chi_Minh"                     # optional, default UTC
 ```
 

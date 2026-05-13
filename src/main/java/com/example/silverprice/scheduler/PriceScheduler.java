@@ -1,31 +1,45 @@
 package com.example.silverprice.scheduler;
 
-import com.example.silverprice.model.SilverPrice;
-import com.example.silverprice.service.NotificationRouter;
-import com.example.silverprice.service.SilverPriceService;
+import com.example.silverprice.service.price.PriceProvider;
+import com.example.silverprice.service.notification.NotificationRouter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class PriceScheduler {
 
-    private final SilverPriceService silverPriceService;
+    private final List<PriceProvider> fetchers;
     private final NotificationRouter notificationRouter;
+    private final ZoneId appZone;
 
     @Scheduled(cron = "0 0 * * * *", zone = "${scheduler.timezone}")
     public void reportSilverPrice() {
-        log.info("Fetching silver price...");
-        try {
-            SilverPrice price = silverPriceService.fetchSilverPrice();
-            notificationRouter.send(price.toMessage());
-            log.info("Silver price: ${} USD/oz", price.getPriceUsd());
-        } catch (Exception e) {
-            log.error("Scheduler error: {}", e.getMessage());
-            notificationRouter.send("❌ Failed to fetch silver price: " + e.getMessage());
+        long start = System.currentTimeMillis();
+        log.info("[{}] Job started", now());
+        for (PriceProvider fetcher : fetchers) {
+            try {
+                String msg = fetcher.fetch();
+                notificationRouter.send(msg);
+                log.info("[{}] {} done", now(), fetcher.name());
+            } catch (Exception e) {
+                String errMsg = "❌ Failed to fetch " + fetcher.name() + ": " + e.getMessage();
+                log.error(errMsg);
+                notificationRouter.send(errMsg);
+            }
         }
+        log.info("[{}] Job done (elapsed: {}ms)", now(), System.currentTimeMillis() - start);
+    }
+
+    private String now() {
+        return ZonedDateTime.now(appZone).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 }

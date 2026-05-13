@@ -43,7 +43,7 @@ func (s *Scheduler) Run() {
 
 func (s *Scheduler) run() {
 	start := time.Now()
-	log.Printf("[%s] Job started", start.In(s.loc).Format("2006-01-02 15:04:05"))
+	log.Printf("Job started")
 	ctx := context.Background()
 
 	for _, f := range s.fetchers {
@@ -59,5 +59,5 @@ func (s *Scheduler) run() {
 		}
 	}
 
-	log.Printf("[%s] Job done (elapsed: %s)", time.Now().In(s.loc).Format("2006-01-02 15:04:05"), time.Since(start).Round(time.Millisecond))
+	log.Printf("Job done (elapsed: %s)", time.Since(start).Round(time.Millisecond))
 }

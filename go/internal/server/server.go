@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
-
 	"silver-price-bot/internal/scheduler"
 )
 
@@ -25,7 +23,7 @@ func (s *Server) Start(addr string) {
 }
 
 func (s *Server) trigger(w http.ResponseWriter, r *http.Request) {
-	log.Printf("POST /api/price/trigger called at %s", time.Now().Format("2006-01-02 15:04:05"))
+	log.Printf("POST /api/price/trigger — manual trigger received")
 	go s.sched.Run()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})

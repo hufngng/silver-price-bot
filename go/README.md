@@ -1,6 +1,14 @@
 # Silver Price Bot — Go
 
-Go implementation running on port **8083**. Fetches from both goldprice.org and muavangbac.vn each hour.
+Go implementation running on port **8083**. Fetches from 3 sources each hour.
+
+## Data Sources
+
+| Fetcher | Source | Data |
+|---|---|---|
+| goldprice | goldprice.org | XAG/USD spot price |
+| muavangbac | muavangbac.vn | Phu Quy silver piece & bar (VND) |
+| giabac | giabac.vn | Silver 999 per chi/luong/kg (VND) |
 
 ## Environment Variables
 
@@ -52,7 +60,8 @@ go/
 │   ├── fetcher/
 │   │   ├── fetcher.go           # Fetcher interface
 │   │   ├── goldprice.go         # goldprice.org JSON API
-│   │   └── muavangbac.go        # muavangbac.vn HTML scrape
+│   │   ├── muavangbac.go        # muavangbac.vn HTML scrape
+│   │   └── giabac.go            # giabac.vn HTML scrape (chi/luong/kg)
 │   ├── notifier/telegram.go     # Telegram sender
 │   ├── scheduler/scheduler.go   # cron job
 │   └── server/server.go         # HTTP trigger endpoint

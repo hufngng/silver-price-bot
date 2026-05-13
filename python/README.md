@@ -1,13 +1,13 @@
 # Silver Price Bot — Python
 
-Flask-based bot running on port **8080** and **8082**.
+Flask-based bots running on port **8080** and **8082**.
 
 ## Sources
 
-| Bot | Source | Port |
-|---|---|---|
-| `silver_bot.py` | goldprice.org (JSON API) | 8080 |
-| `muavangbac_bot.py` | muavangbac.vn (HTML scrape) | 8082 |
+| Bot | Source | Data | Port |
+|---|---|---|---|
+| `silver_bot.py` | goldprice.org | XAG/USD spot price | 8080 |
+| `muavangbac_bot.py` | muavangbac.vn | Phu Quy silver piece & bar (VND) | 8082 |
 
 ## Environment Variables
 
@@ -30,6 +30,8 @@ python muavangbac_bot.py
 
 **silver_bot:**
 ```bash
+cd python/
+
 docker build -f Dockerfile -t silver-bot-python .
 
 docker run -d \
@@ -44,6 +46,8 @@ docker run -d \
 
 **muavangbac_bot:**
 ```bash
+cd python/
+
 docker build -f Dockerfile.muavangbac -t muavangbac-bot .
 
 docker run -d \
