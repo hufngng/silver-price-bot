@@ -35,7 +35,7 @@ jobs:
           retention-days: 7
 
   docker:
-    name: Build Docker image
+    name: Build Docker image (Java)
     runs-on: ubuntu-latest
     needs: build
 
@@ -44,3 +44,26 @@ jobs:
 
       - name: Build image
         run: docker build -t silver-price-bot:${{ github.sha }} .
+
+  docker-go:
+    name: Build Docker image (Go)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t silver-bot-go:${{ github.sha }} ./go
+
+  docker-python:
+    name: Build Docker image (Python)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build silver_bot image
+        run: docker build -t silver-bot-python:${{ github.sha }} ./python
+
+      - name: Build muavangbac image
+        run: docker build -f python/Dockerfile.muavangbac -t silver-bot-muavangbac:${{ github.sha }} ./python

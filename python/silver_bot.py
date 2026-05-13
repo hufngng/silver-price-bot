@@ -71,10 +71,16 @@ def job():
 
 @app.post("/api/price/trigger")
 def trigger():
+    start = time.time()
+    print(f"[{datetime.now(TZ).strftime('%Y-%m-%d %H:%M:%S')}] POST /api/price/trigger called")
     try:
         data = job()
+        elapsed = time.time() - start
+        print(f"[{datetime.now(TZ).strftime('%Y-%m-%d %H:%M:%S')}] Trigger done (elapsed: {elapsed:.2f}s)")
         return jsonify(data)
     except Exception as e:
+        elapsed = time.time() - start
+        print(f"[{datetime.now(TZ).strftime('%Y-%m-%d %H:%M:%S')}] Trigger failed after {elapsed:.2f}s")
         return jsonify({"error": str(e)}), 500
 
 

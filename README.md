@@ -2,6 +2,19 @@
 
 Sends silver spot price (XAG/USD) to Telegram and/or Discord every hour, sourced from goldprice.org.
 
+## Project Structure
+
+```
+silver-price-bot/
+├── src/        # Java implementation (Spring Boot) — port 8081
+├── python/     # Python implementation (Flask) — port 8080, 8082
+└── go/         # Go implementation — port 8083
+```
+
+See implementation-specific READMEs:
+- [python/README.md](python/README.md)
+- [go/README.md](go/README.md)
+
 ## Environment Variables
 
 ```bash
@@ -53,37 +66,4 @@ docker run -d \
 
 ```bash
 curl -X POST http://localhost:8081/api/price/trigger
-```
-
-## Python — port 8080
-
-**Run directly:**
-
-```bash
-cd scripts
-pip install -r requirements.txt
-python silver_bot.py
-```
-
-**Run with Docker:**
-
-```bash
-cd scripts
-
-docker build -t silver-bot-python .
-
-docker run -d \
-  -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
-  -e TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID \
-  -e TIMEZONE=$TIMEZONE \
-  -p 8080:8080 \
-  --name silver-bot-python \
-  --restart unless-stopped \
-  silver-bot-python
-```
-
-**Manual trigger:**
-
-```bash
-curl -X POST http://localhost:8080/api/price/trigger
 ```
