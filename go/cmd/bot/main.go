@@ -18,6 +18,7 @@ func main() {
 	fetchers := []fetcher.Fetcher{
 		fetcher.NewGoldprice(cfg.Location),
 		fetcher.NewMuaVangBac(cfg.Location),
+		fetcher.NewGiaBac(cfg.Location),
 	}
 
 	sched := scheduler.New(cfg.Location, fetchers, telegram)
