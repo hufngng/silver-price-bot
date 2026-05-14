@@ -22,6 +22,8 @@ public class TelegramService implements NotificationService {
 
     private static final String TELEGRAM_API = "https://api.telegram.org/bot%s/sendMessage";
     private static final int MAX_LENGTH = 4096;
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_DELAY_MS = 3000;
 
     @Value("${telegram.bot.token}")
     private String botToken;
@@ -52,18 +54,26 @@ public class TelegramService implements NotificationService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                url, new HttpEntity<>(body, headers), String.class
-            );
-            if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("Telegram: message sent");
-            } else {
-                log.error("Telegram: error {}", response.getStatusCode());
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    log.info("Telegram: message sent");
+                    return;
+                }
+                log.warn("Telegram: attempt {}/{} — status {}", attempt, MAX_RETRIES, response.getStatusCode());
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("Telegram: attempt {}/{} — {}", attempt, MAX_RETRIES, e.getMessage());
             }
-        } catch (Exception e) {
-            log.error("Telegram: exception {}", e.getMessage());
+            if (attempt < MAX_RETRIES) {
+                try { Thread.sleep(RETRY_DELAY_MS); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); return; }
+            }
         }
+        log.error("Telegram: failed after {} attempts — {}", MAX_RETRIES,
+            lastException != null ? lastException.getMessage() : "non-2xx response");
     }
 }

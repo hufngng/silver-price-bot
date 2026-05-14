@@ -15,10 +15,15 @@ func main() {
 
 	telegram := notifier.NewTelegram(cfg.TelegramToken, cfg.TelegramChatID)
 
-	fetchers := []fetcher.Fetcher{
-		fetcher.NewGoldprice(cfg.Location),
-		fetcher.NewMuaVangBac(cfg.Location),
-		fetcher.NewGiaBac(cfg.Location),
+	var fetchers []fetcher.Fetcher
+	if cfg.EnableGoldprice {
+		fetchers = append(fetchers, fetcher.NewGoldprice(cfg.Location))
+	}
+	if cfg.EnableMuaVangBac {
+		fetchers = append(fetchers, fetcher.NewMuaVangBac(cfg.Location))
+	}
+	if cfg.EnableGiaBac {
+		fetchers = append(fetchers, fetcher.NewGiaBac(cfg.Location))
 	}
 
 	sched := scheduler.New(cfg.Location, fetchers, telegram)

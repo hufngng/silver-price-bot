@@ -6,10 +6,13 @@ import (
 )
 
 type Config struct {
-	TelegramToken  string
-	TelegramChatID string
-	Location       *time.Location
-	Port           string
+	TelegramToken    string
+	TelegramChatID   string
+	Location         *time.Location
+	Port             string
+	EnableGoldprice  bool
+	EnableMuaVangBac bool
+	EnableGiaBac     bool
 }
 
 func Load() *Config {
@@ -26,9 +29,23 @@ func Load() *Config {
 	}
 
 	return &Config{
-		TelegramToken:  os.Getenv("TELEGRAM_BOT_TOKEN"),
-		TelegramChatID: os.Getenv("TELEGRAM_CHAT_ID"),
-		Location:       loc,
-		Port:           port,
+		TelegramToken:    os.Getenv("TELEGRAM_BOT_TOKEN"),
+		TelegramChatID:   os.Getenv("TELEGRAM_CHAT_ID"),
+		Location:         loc,
+		Port:             port,
+		EnableGoldprice:  getEnvBool("FETCHER_GOLDPRICE", true),
+		EnableMuaVangBac: getEnvBool("FETCHER_MUAVANGBAC", false),
+		EnableGiaBac:     getEnvBool("FETCHER_GIABAC", false),
 	}
+}
+
+func getEnvBool(key string, defaultVal bool) bool {
+	v := os.Getenv(key)
+	if v == "false" || v == "0" {
+		return false
+	}
+	if v == "true" || v == "1" {
+		return true
+	}
+	return defaultVal
 }

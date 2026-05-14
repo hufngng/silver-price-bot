@@ -12,6 +12,8 @@ import (
 const (
 	telegramAPI = "https://api.telegram.org/bot%s/sendMessage"
 	maxLength   = 4096
+	maxRetries  = 3
+	retryDelay  = 3 * time.Second
 )
 
 type Telegram struct {
@@ -44,15 +46,25 @@ func (t *Telegram) sendChunk(text string) error {
 		"text":       text,
 		"parse_mode": "Markdown",
 	})
-	resp, err := t.client.Post(url, "application/json", bytes.NewReader(body))
-	if err != nil {
-		return err
+
+	var lastErr error
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		resp, err := t.client.Post(url, "application/json", bytes.NewReader(body))
+		if err == nil {
+			defer resp.Body.Close()
+			if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+				lastErr = fmt.Errorf("telegram API returned %d", resp.StatusCode)
+			} else {
+				return nil
+			}
+		} else {
+			lastErr = err
+		}
+		if attempt < maxRetries {
+			time.Sleep(retryDelay)
+		}
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("telegram API returned %d", resp.StatusCode)
-	}
-	return nil
+	return fmt.Errorf("after %d attempts: %w", maxRetries, lastErr)
 }
 
 // splitMessage breaks msg at newline boundaries so each chunk fits within max bytes.
